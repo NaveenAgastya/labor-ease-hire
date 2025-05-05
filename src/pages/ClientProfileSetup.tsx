@@ -60,9 +60,18 @@ const ClientProfileSetup = () => {
       let profileImageUrl = null;
       if (profileImageFile) {
         const fileExt = profileImageFile.name.split('.').pop();
-        const filePath = `${currentUser.id}/${Date.now()}.${fileExt}`;
+        const filePath = `profile_images/${currentUser.id}/${Date.now()}.${fileExt}`;
         
-        const { error: uploadError } = await supabase.storage
+        // First, check if the bucket exists, if not create it
+        const { data: buckets } = await supabase.storage.listBuckets();
+        if (!buckets?.find(bucket => bucket.name === 'user_documents')) {
+          await supabase.storage.createBucket('user_documents', {
+            public: false,
+            fileSizeLimit: 1024 * 1024 * 5 // 5MB
+          });
+        }
+        
+        const { error: uploadError, data } = await supabase.storage
           .from('user_documents')
           .upload(filePath, profileImageFile);
           
@@ -70,8 +79,14 @@ const ClientProfileSetup = () => {
           throw uploadError;
         }
         
-        profileImageUrl = filePath;
+        const { data: publicUrlData } = supabase.storage
+          .from('user_documents')
+          .getPublicUrl(filePath);
+          
+        profileImageUrl = publicUrlData.publicUrl;
       }
+      
+      const fullAddress = `${address}, ${city}, ${state}, ${zipCode}`;
       
       // Update profile in Supabase
       const { error } = await supabase
@@ -79,7 +94,7 @@ const ClientProfileSetup = () => {
         .update({
           full_name: fullName,
           phone,
-          address: `${address}, ${city}, ${state}, ${zipCode}`,
+          address: fullAddress,
           updated_at: new Date().toISOString()
         })
         .eq('id', currentUser.id);

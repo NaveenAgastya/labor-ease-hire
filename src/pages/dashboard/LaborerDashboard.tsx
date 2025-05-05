@@ -1,9 +1,12 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import LaborerSidebar from '@/components/dashboard/LaborerSidebar';
 import { Clock, CheckCircle, AlertCircle, DollarSign } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface LaborerProfile {
   fullName: string;
@@ -24,12 +27,14 @@ interface Job {
 
 const LaborerDashboard = () => {
   const { currentUser } = useAuth();
+  const { toast } = useToast();
   const [profile, setProfile] = useState<LaborerProfile | null>(null);
   const [pendingJobs, setPendingJobs] = useState<Job[]>([]);
   const [completedJobs, setCompletedJobs] = useState<Job[]>([]);
   const [jobRequests, setJobRequests] = useState<Job[]>([]);
   const [totalEarnings, setTotalEarnings] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -59,47 +64,91 @@ const LaborerDashboard = () => {
           }
           
           if (profileError || laborerError) {
-            throw profileError || laborerError;
+            console.error("Error fetching profile:", profileError || laborerError);
           }
 
           // Fetch job assignments where laborer is assigned
           const { data: pendingData, error: pendingError } = await supabase
             .from('job_assignments')
-            .select('*, jobs(*)')
+            .select(`
+              id,
+              start_date,
+              end_date,
+              status,
+              final_amount,
+              jobs (
+                id, 
+                title
+              ),
+              client_id
+            `)
             .eq('laborer_id', currentUser.id)
             .eq('status', 'in_progress');
             
           if (pendingData) {
-            setPendingJobs(pendingData.map(item => ({
-              id: item.id,
-              title: item.jobs?.title || '',
-              clientName: 'Client', // Would need to join with profiles to get actual name
-              status: item.status,
-              date: item.start_date,
-              amount: item.final_amount || 0
-            })));
+            // Fetch client names for each job
+            const pendingJobsWithClientNames = await Promise.all(pendingData.map(async (item) => {
+              const { data: clientData } = await supabase
+                .from('profiles')
+                .select('full_name')
+                .eq('id', item.client_id)
+                .single();
+                
+              return {
+                id: item.id,
+                title: item.jobs?.title || '',
+                clientName: clientData?.full_name || 'Client',
+                status: item.status,
+                date: item.start_date,
+                amount: item.final_amount || 0
+              };
+            }));
+            
+            setPendingJobs(pendingJobsWithClientNames);
           }
           
           if (pendingError) {
-            throw pendingError;
+            console.error("Error fetching pending jobs:", pendingError);
           }
           
           // Completed jobs
           const { data: completedData, error: completedError } = await supabase
             .from('job_assignments')
-            .select('*, jobs(*)')
+            .select(`
+              id,
+              start_date,
+              end_date,
+              status,
+              final_amount,
+              jobs (
+                id, 
+                title
+              ),
+              client_id
+            `)
             .eq('laborer_id', currentUser.id)
             .eq('status', 'completed');
             
           if (completedData) {
-            setCompletedJobs(completedData.map(item => ({
-              id: item.id,
-              title: item.jobs?.title || '',
-              clientName: 'Client', // Would need to join with profiles to get actual name
-              status: item.status,
-              date: item.end_date,
-              amount: item.final_amount || 0
-            })));
+            // Fetch client names for each job
+            const completedJobsWithClientNames = await Promise.all(completedData.map(async (item) => {
+              const { data: clientData } = await supabase
+                .from('profiles')
+                .select('full_name')
+                .eq('id', item.client_id)
+                .single();
+                
+              return {
+                id: item.id,
+                title: item.jobs?.title || '',
+                clientName: clientData?.full_name || 'Client',
+                status: item.status,
+                date: item.end_date,
+                amount: item.final_amount || 0
+              };
+            }));
+            
+            setCompletedJobs(completedJobsWithClientNames);
             
             // Calculate total earnings
             const earnings = completedData.reduce((sum, job) => sum + (job.final_amount || 0), 0);
@@ -107,29 +156,51 @@ const LaborerDashboard = () => {
           }
           
           if (completedError) {
-            throw completedError;
+            console.error("Error fetching completed jobs:", completedError);
           }
           
           // Job applications (requests)
           const { data: requestsData, error: requestsError } = await supabase
             .from('job_applications')
-            .select('*, jobs(*)')
+            .select(`
+              id,
+              created_at,
+              status,
+              proposed_rate,
+              job_id,
+              jobs (
+                id,
+                title,
+                client_id
+              )
+            `)
             .eq('laborer_id', currentUser.id)
             .eq('status', 'pending');
             
           if (requestsData) {
-            setJobRequests(requestsData.map(item => ({
-              id: item.id,
-              title: item.jobs?.title || '',
-              clientName: 'Client', // Would need to join with profiles to get actual name
-              status: 'requested',
-              date: item.created_at,
-              amount: item.proposed_rate || 0
-            })));
+            // Fetch client names for each job
+            const requestsWithClientNames = await Promise.all(requestsData.map(async (item) => {
+              const { data: clientData } = await supabase
+                .from('profiles')
+                .select('full_name')
+                .eq('id', item.jobs?.client_id)
+                .single();
+                
+              return {
+                id: item.id,
+                title: item.jobs?.title || '',
+                clientName: clientData?.full_name || 'Client',
+                status: 'requested',
+                date: item.created_at,
+                amount: item.proposed_rate || 0
+              };
+            }));
+            
+            setJobRequests(requestsWithClientNames);
           }
           
           if (requestsError) {
-            throw requestsError;
+            console.error("Error fetching job requests:", requestsError);
           }
           
         } catch (error) {
@@ -199,6 +270,120 @@ const LaborerDashboard = () => {
       setTotalEarnings(470); // Sum of completed jobs
     }
   }, [loading, pendingJobs.length, completedJobs.length, jobRequests.length]);
+
+  // Handle job application response
+  const handleJobRequestResponse = async (jobId: string, accept: boolean) => {
+    setLoadingAction(jobId);
+    try {
+      // Update job application status
+      await supabase
+        .from('job_applications')
+        .update({ 
+          status: accept ? 'accepted' : 'declined' 
+        })
+        .eq('id', jobId);
+      
+      // If accepted, create a job assignment (in a real app, this would likely be handled by the client confirming the accepted application)
+      if (accept) {
+        const { data: jobApplication } = await supabase
+          .from('job_applications')
+          .select('job_id, laborer_id, proposed_rate')
+          .eq('id', jobId)
+          .single();
+          
+        if (jobApplication) {
+          const { data: jobData } = await supabase
+            .from('jobs')
+            .select('client_id')
+            .eq('id', jobApplication.job_id)
+            .single();
+            
+          if (jobData) {
+            await supabase
+              .from('job_assignments')
+              .insert({
+                job_id: jobApplication.job_id,
+                laborer_id: jobApplication.laborer_id,
+                client_id: jobData.client_id,
+                start_date: new Date().toISOString(),
+                status: 'in_progress',
+                final_amount: jobApplication.proposed_rate
+              });
+          }
+        }
+      }
+      
+      // Remove the job request from the UI
+      setJobRequests(jobRequests.filter(job => job.id !== jobId));
+      
+      toast({
+        title: `Job ${accept ? 'accepted' : 'declined'} successfully`,
+        description: accept ? "You've been added to the job" : "Job request has been declined",
+      });
+      
+      // Refresh data if needed
+      if (accept) {
+        // In a real app, you might want to refresh the pending jobs list
+        // This is simplified for demo purposes
+        const jobRequest = jobRequests.find(job => job.id === jobId);
+        if (jobRequest) {
+          setPendingJobs([...pendingJobs, {
+            ...jobRequest,
+            status: 'in-progress'
+          }]);
+        }
+      }
+    } catch (error: any) {
+      console.error("Error handling job request:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: `Failed to ${accept ? 'accept' : 'decline'} job request: ${error.message}`,
+      });
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  // Handle marking a job as complete
+  const handleMarkComplete = async (jobId: string) => {
+    setLoadingAction(jobId);
+    try {
+      await supabase
+        .from('job_assignments')
+        .update({
+          status: 'completed',
+          end_date: new Date().toISOString()
+        })
+        .eq('id', jobId);
+        
+      toast({
+        title: "Job marked as complete",
+        description: "The client will be notified of completion",
+      });
+      
+      // Update UI
+      const completedJob = pendingJobs.find(job => job.id === jobId);
+      if (completedJob) {
+        setPendingJobs(pendingJobs.filter(job => job.id !== jobId));
+        setCompletedJobs([...completedJobs, {
+          ...completedJob,
+          status: 'completed',
+          date: new Date().toISOString()
+        }]);
+        setTotalEarnings(totalEarnings + (completedJob.amount || 0));
+      }
+    } catch (error: any) {
+      console.error("Error marking job as complete:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: `Failed to mark job as complete: ${error.message}`,
+      });
+    } finally {
+      setLoadingAction(null);
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -272,16 +457,26 @@ const LaborerDashboard = () => {
                     <div>
                       <h4 className="font-medium">{job.title}</h4>
                       <p className="text-sm text-gray-500">
-                        Client: {job.clientName} | Date: {job.date}
+                        Client: {job.clientName} | Date: {new Date(job.date).toLocaleDateString()}
                       </p>
+                      <p className="text-sm font-medium mt-1">Proposed Rate: ${job.amount}/hr</p>
                     </div>
                     <div className="flex space-x-2">
-                      <button className="px-3 py-1 bg-primary text-white rounded-md hover:bg-blue-600">
-                        Accept
-                      </button>
-                      <button className="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">
-                        Decline
-                      </button>
+                      <Button 
+                        onClick={() => handleJobRequestResponse(job.id, true)} 
+                        disabled={loadingAction === job.id}
+                        className="px-3 py-1 bg-primary text-white rounded-md hover:bg-blue-600"
+                      >
+                        {loadingAction === job.id ? "Processing..." : "Accept"}
+                      </Button>
+                      <Button 
+                        onClick={() => handleJobRequestResponse(job.id, false)}
+                        disabled={loadingAction === job.id}
+                        variant="outline"
+                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+                      >
+                        {loadingAction === job.id ? "Processing..." : "Decline"}
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -307,17 +502,23 @@ const LaborerDashboard = () => {
                       <div>
                         <h4 className="font-medium">{job.title}</h4>
                         <p className="text-sm text-gray-500">
-                          Client: {job.clientName} | Date: {job.date}
+                          Client: {job.clientName} | Date: {new Date(job.date).toLocaleDateString()}
                         </p>
+                        <p className="text-sm font-medium mt-1">Payment: ${job.amount}</p>
                       </div>
                       <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
                         In Progress
                       </span>
                     </div>
                     <div className="mt-4 flex justify-end">
-                      <button className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600">
-                        Mark Complete
-                      </button>
+                      <Button 
+                        onClick={() => handleMarkComplete(job.id)}
+                        disabled={loadingAction === job.id}
+                        variant="success"
+                        className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600"
+                      >
+                        {loadingAction === job.id ? "Processing..." : "Mark Complete"}
+                      </Button>
                     </div>
                   </div>
                 ))}
