@@ -1,26 +1,101 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+
+// Pages
 import Index from "./pages/Index";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
+import LaborerProfileSetup from "./pages/LaborerProfileSetup";
+import ClientProfileSetup from "./pages/ClientProfileSetup";
+import LaborerDashboard from "./pages/dashboard/LaborerDashboard";
+import ClientDashboard from "./pages/dashboard/ClientDashboard";
 
 const queryClient = new QueryClient();
 
+// Route protection component
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  requiredUserType?: 'laborer' | 'client' | null;
+}
+
+const ProtectedRoute = ({ children, requiredUserType }: ProtectedRouteProps) => {
+  const { currentUser, userType, loading } = useAuth();
+  
+  if (loading) return <div>Loading...</div>;
+  
+  if (!currentUser) {
+    return <Navigate to="/login" />;
+  }
+  
+  if (requiredUserType && userType !== requiredUserType) {
+    return <Navigate to="/" />;
+  }
+  
+  return <>{children}</>;
+};
+
+const AppRoutes = () => {
+  return (
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      
+      <Route path="/laborer-profile-setup" element={
+        <ProtectedRoute requiredUserType="laborer">
+          <LaborerProfileSetup />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/client-profile-setup" element={
+        <ProtectedRoute requiredUserType="client">
+          <ClientProfileSetup />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/laborer-dashboard" element={
+        <ProtectedRoute requiredUserType="laborer">
+          <LaborerDashboard />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/client-dashboard" element={
+        <ProtectedRoute requiredUserType="client">
+          <ClientDashboard />
+        </ProtectedRoute>
+      } />
+      
+      {/* Add sub-routes for dashboard sections */}
+      {/* <Route path="/laborer-dashboard/pending" element={...} /> */}
+      {/* <Route path="/laborer-dashboard/completed" element={...} /> */}
+      {/* <Route path="/laborer-dashboard/requests" element={...} /> */}
+      {/* <Route path="/laborer-dashboard/earnings" element={...} /> */}
+      {/* <Route path="/client-dashboard/find-laborers" element={...} /> */}
+      {/* and so on... */}
+      
+      {/* 404 Route */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
