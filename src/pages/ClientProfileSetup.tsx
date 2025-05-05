@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { db, storage, doc, setDoc, ref, uploadBytes, getDownloadURL } from '../lib/firebase';
+import { supabase } from '@/integrations/supabase/client';
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -59,25 +59,34 @@ const ClientProfileSetup = () => {
       // Upload profile image if provided
       let profileImageUrl = null;
       if (profileImageFile) {
-        const profileImageRef = ref(storage, `profile_images/${currentUser.uid}/${profileImageFile.name}`);
-        await uploadBytes(profileImageRef, profileImageFile);
-        profileImageUrl = await getDownloadURL(profileImageRef);
+        const fileExt = profileImageFile.name.split('.').pop();
+        const filePath = `${currentUser.id}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('user_documents')
+          .upload(filePath, profileImageFile);
+          
+        if (uploadError) {
+          throw uploadError;
+        }
+        
+        profileImageUrl = filePath;
       }
       
-      // Save client profile
-      await setDoc(doc(db, 'clientProfiles', currentUser.uid), {
-        userId: currentUser.uid,
-        fullName,
-        phone,
-        address,
-        city,
-        state,
-        zipCode,
-        preferredContactMethod,
-        profileImageUrl,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      });
+      // Update profile in Supabase
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: fullName,
+          phone,
+          address: `${address}, ${city}, ${state}, ${zipCode}`,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', currentUser.id);
+      
+      if (error) {
+        throw error;
+      }
       
       toast({
         title: "Profile created successfully",

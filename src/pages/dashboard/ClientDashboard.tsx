@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { db, doc, getDoc, collection, query, where, getDocs } from '@/lib/firebase';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import ClientSidebar from '@/components/dashboard/ClientSidebar';
@@ -36,41 +35,56 @@ const ClientDashboard = () => {
       if (currentUser) {
         try {
           // Fetch client profile
-          const profileDoc = await getDoc(doc(db, 'clientProfiles', currentUser.uid));
-          if (profileDoc.exists()) {
-            setProfile(profileDoc.data() as ClientProfile);
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('full_name, id')
+            .eq('id', currentUser.id)
+            .single();
+            
+          if (profileData) {
+            setProfile({
+              fullName: profileData.full_name || '',
+              profileImageUrl: null
+            });
+          }
+          
+          if (profileError) {
+            throw profileError;
           }
 
           // Fetch jobs
-          const jobsRef = collection(db, 'jobs');
+          const { data: ongoingData, error: ongoingError } = await supabase
+            .from('jobs')
+            .select('*')
+            .eq('client_id', currentUser.id)
+            .in('status', ['open', 'assigned']);
+            
+          if (ongoingData) {
+            setOngoingJobs(ongoingData as unknown as Job[]);
+          }
           
-          // Ongoing jobs
-          const ongoingQuery = query(jobsRef, 
-            where('clientId', '==', currentUser.uid),
-            where('status', 'in', ['requested', 'in-progress'])
-          );
-          const ongoingSnapshot = await getDocs(ongoingQuery);
-          const ongoingData = ongoingSnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          })) as Job[];
-          setOngoingJobs(ongoingData);
+          if (ongoingError) {
+            throw ongoingError;
+          }
           
           // Completed jobs
-          const completedQuery = query(jobsRef, 
-            where('clientId', '==', currentUser.uid),
-            where('status', '==', 'completed')
-          );
-          const completedSnapshot = await getDocs(completedQuery);
-          const completedData = completedSnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          })) as Job[];
-          setCompletedJobs(completedData);
+          const { data: completedData, error: completedError } = await supabase
+            .from('jobs')
+            .select('*')
+            .eq('client_id', currentUser.id)
+            .eq('status', 'completed');
+            
+          if (completedData) {
+            setCompletedJobs(completedData as unknown as Job[]);
+            
+            // Calculate total spent
+            const spent = completedData.reduce((sum, job) => sum + (job.budget || 0), 0);
+            setTotalSpent(spent);
+          }
           
-          // Calculate total spent
-          const spent = completedData.reduce((sum, job) => sum + job.amount, 0);
-          setTotalSpent(spent);
+          if (completedError) {
+            throw completedError;
+          }
           
           // Fetch recent laborers (placeholder for now)
           setRecentLaborers([

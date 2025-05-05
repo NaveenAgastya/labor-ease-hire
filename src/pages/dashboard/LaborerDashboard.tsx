@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { db, doc, getDoc, collection, query, where, getDocs } from '@/lib/firebase';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import LaborerSidebar from '@/components/dashboard/LaborerSidebar';
 import { Clock, CheckCircle, AlertCircle, DollarSign } from 'lucide-react';
@@ -36,54 +35,102 @@ const LaborerDashboard = () => {
     const fetchData = async () => {
       if (currentUser) {
         try {
-          // Fetch laborer profile
-          const profileDoc = await getDoc(doc(db, 'laborerProfiles', currentUser.uid));
-          if (profileDoc.exists()) {
-            setProfile(profileDoc.data() as LaborerProfile);
+          // Fetch laborer profile and details
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('full_name, id')
+            .eq('id', currentUser.id)
+            .single();
+            
+          const { data: laborerData, error: laborerError } = await supabase
+            .from('laborer_details')
+            .select('hourly_rate, verification_status, skills')
+            .eq('id', currentUser.id)
+            .single();
+            
+          if (profileData && laborerData) {
+            setProfile({
+              fullName: profileData.full_name || '',
+              hourlyRate: laborerData.hourly_rate || 0,
+              verified: laborerData.verification_status === 'verified',
+              profileImageUrl: null,
+              skills: laborerData.skills || []
+            });
+          }
+          
+          if (profileError || laborerError) {
+            throw profileError || laborerError;
           }
 
-          // Fetch jobs
-          const jobsRef = collection(db, 'jobs');
+          // Fetch job assignments where laborer is assigned
+          const { data: pendingData, error: pendingError } = await supabase
+            .from('job_assignments')
+            .select('*, jobs(*)')
+            .eq('laborer_id', currentUser.id)
+            .eq('status', 'in_progress');
+            
+          if (pendingData) {
+            setPendingJobs(pendingData.map(item => ({
+              id: item.id,
+              title: item.jobs?.title || '',
+              clientName: 'Client', // Would need to join with profiles to get actual name
+              status: item.status,
+              date: item.start_date,
+              amount: item.final_amount || 0
+            })));
+          }
           
-          // Pending jobs
-          const pendingQuery = query(jobsRef, 
-            where('laborerId', '==', currentUser.uid),
-            where('status', '==', 'in-progress')
-          );
-          const pendingSnapshot = await getDocs(pendingQuery);
-          const pendingData = pendingSnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          })) as Job[];
-          setPendingJobs(pendingData);
+          if (pendingError) {
+            throw pendingError;
+          }
           
           // Completed jobs
-          const completedQuery = query(jobsRef, 
-            where('laborerId', '==', currentUser.uid),
-            where('status', '==', 'completed')
-          );
-          const completedSnapshot = await getDocs(completedQuery);
-          const completedData = completedSnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          })) as Job[];
-          setCompletedJobs(completedData);
+          const { data: completedData, error: completedError } = await supabase
+            .from('job_assignments')
+            .select('*, jobs(*)')
+            .eq('laborer_id', currentUser.id)
+            .eq('status', 'completed');
+            
+          if (completedData) {
+            setCompletedJobs(completedData.map(item => ({
+              id: item.id,
+              title: item.jobs?.title || '',
+              clientName: 'Client', // Would need to join with profiles to get actual name
+              status: item.status,
+              date: item.end_date,
+              amount: item.final_amount || 0
+            })));
+            
+            // Calculate total earnings
+            const earnings = completedData.reduce((sum, job) => sum + (job.final_amount || 0), 0);
+            setTotalEarnings(earnings);
+          }
           
-          // Calculate total earnings
-          const earnings = completedData.reduce((sum, job) => sum + job.amount, 0);
-          setTotalEarnings(earnings);
+          if (completedError) {
+            throw completedError;
+          }
           
-          // Job requests
-          const requestsQuery = query(jobsRef, 
-            where('laborerId', '==', currentUser.uid),
-            where('status', '==', 'requested')
-          );
-          const requestsSnapshot = await getDocs(requestsQuery);
-          const requestsData = requestsSnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          })) as Job[];
-          setJobRequests(requestsData);
+          // Job applications (requests)
+          const { data: requestsData, error: requestsError } = await supabase
+            .from('job_applications')
+            .select('*, jobs(*)')
+            .eq('laborer_id', currentUser.id)
+            .eq('status', 'pending');
+            
+          if (requestsData) {
+            setJobRequests(requestsData.map(item => ({
+              id: item.id,
+              title: item.jobs?.title || '',
+              clientName: 'Client', // Would need to join with profiles to get actual name
+              status: 'requested',
+              date: item.created_at,
+              amount: item.proposed_rate || 0
+            })));
+          }
+          
+          if (requestsError) {
+            throw requestsError;
+          }
           
         } catch (error) {
           console.error("Error fetching laborer data:", error);

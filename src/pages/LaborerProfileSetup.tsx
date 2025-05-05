@@ -1,9 +1,8 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { db, storage, doc, setDoc, ref, uploadBytes, getDownloadURL } from '../lib/firebase';
+import { supabase } from '@/integrations/supabase/client';
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -115,38 +114,66 @@ const LaborerProfileSetup = () => {
       setLoading(true);
       
       // Upload ID proof
-      const idProofRef = ref(storage, `id_proofs/${currentUser.uid}/${idProofFile.name}`);
-      await uploadBytes(idProofRef, idProofFile);
-      const idProofUrl = await getDownloadURL(idProofRef);
+      const idFileExt = idProofFile.name.split('.').pop();
+      const idFilePath = `${currentUser.id}/id_proof_${Date.now()}.${idFileExt}`;
       
-      // Upload profile image if provided
-      let profileImageUrl = null;
-      if (profileImageFile) {
-        const profileImageRef = ref(storage, `profile_images/${currentUser.uid}/${profileImageFile.name}`);
-        await uploadBytes(profileImageRef, profileImageFile);
-        profileImageUrl = await getDownloadURL(profileImageRef);
+      const { error: idUploadError } = await supabase.storage
+        .from('user_documents')
+        .upload(idFilePath, idProofFile);
+        
+      if (idUploadError) {
+        throw idUploadError;
       }
       
-      // Save laborer profile
-      await setDoc(doc(db, 'laborerProfiles', currentUser.uid), {
-        userId: currentUser.uid,
-        fullName,
-        phone,
-        address,
-        city,
-        state,
-        zipCode,
-        dateOfBirth,
-        bio,
-        experience,
-        hourlyRate: parseFloat(hourlyRate),
-        skills: selectedSkills,
-        idProofUrl,
-        profileImageUrl,
-        verified: false, // Will be verified by admin
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      });
+      // Upload profile image if provided
+      let profileImagePath = null;
+      if (profileImageFile) {
+        const profileFileExt = profileImageFile.name.split('.').pop();
+        const profileFilePath = `${currentUser.id}/profile_${Date.now()}.${profileFileExt}`;
+        
+        const { error: profileUploadError } = await supabase.storage
+          .from('user_documents')
+          .upload(profileFilePath, profileImageFile);
+          
+        if (profileUploadError) {
+          throw profileUploadError;
+        }
+        
+        profileImagePath = profileFilePath;
+      }
+      
+      // Update profile in Supabase
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          full_name: fullName,
+          phone,
+          address: `${address}, ${city}, ${state}, ${zipCode}`,
+          bio,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', currentUser.id);
+      
+      if (profileError) {
+        throw profileError;
+      }
+      
+      // Update laborer details in Supabase
+      const { error: laborerError } = await supabase
+        .from('laborer_details')
+        .update({
+          skills: selectedSkills,
+          experience_years: experience === 'beginner' ? 0 : 
+                           experience === 'intermediate' ? 2 :
+                           experience === 'experienced' ? 4 : 6,
+          hourly_rate: parseFloat(hourlyRate),
+          id_proof_url: idFilePath
+        })
+        .eq('id', currentUser.id);
+      
+      if (laborerError) {
+        throw laborerError;
+      }
       
       toast({
         title: "Profile created successfully",
