@@ -9,7 +9,220 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      job_applications: {
+        Row: {
+          created_at: string
+          id: string
+          job_id: string | null
+          laborer_id: string | null
+          note: string | null
+          proposed_rate: number | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          job_id?: string | null
+          laborer_id?: string | null
+          note?: string | null
+          proposed_rate?: number | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          job_id?: string | null
+          laborer_id?: string | null
+          note?: string | null
+          proposed_rate?: number | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_assignments: {
+        Row: {
+          client_id: string | null
+          client_rating: number | null
+          client_review: string | null
+          end_date: string | null
+          final_amount: number | null
+          id: string
+          job_id: string | null
+          laborer_id: string | null
+          laborer_rating: number | null
+          laborer_review: string | null
+          payment_status: string | null
+          start_date: string | null
+          status: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          client_rating?: number | null
+          client_review?: string | null
+          end_date?: string | null
+          final_amount?: number | null
+          id?: string
+          job_id?: string | null
+          laborer_id?: string | null
+          laborer_rating?: number | null
+          laborer_review?: string | null
+          payment_status?: string | null
+          start_date?: string | null
+          status?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          client_rating?: number | null
+          client_review?: string | null
+          end_date?: string | null
+          final_amount?: number | null
+          id?: string
+          job_id?: string | null
+          laborer_id?: string | null
+          laborer_rating?: number | null
+          laborer_review?: string | null
+          payment_status?: string | null
+          start_date?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_assignments_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          budget: number | null
+          client_id: string | null
+          created_at: string
+          description: string
+          id: string
+          location: string | null
+          required_skills: string[] | null
+          status: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          budget?: number | null
+          client_id?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          location?: string | null
+          required_skills?: string[] | null
+          status?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          budget?: number | null
+          client_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          location?: string | null
+          required_skills?: string[] | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      laborer_details: {
+        Row: {
+          availability: boolean | null
+          experience_years: number | null
+          hourly_rate: number | null
+          id: string
+          id_proof_url: string | null
+          skills: string[] | null
+          verification_status: string | null
+        }
+        Insert: {
+          availability?: boolean | null
+          experience_years?: number | null
+          hourly_rate?: number | null
+          id: string
+          id_proof_url?: string | null
+          skills?: string[] | null
+          verification_status?: string | null
+        }
+        Update: {
+          availability?: boolean | null
+          experience_years?: number | null
+          hourly_rate?: number | null
+          id?: string
+          id_proof_url?: string | null
+          skills?: string[] | null
+          verification_status?: string | null
+        }
+        Relationships: []
+      }
+      Login: {
+        Row: {
+          "Email-id": string
+          name: string
+          password: string | null
+        }
+        Insert: {
+          "Email-id"?: string
+          name?: string
+          password?: string | null
+        }
+        Update: {
+          "Email-id"?: string
+          name?: string
+          password?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          address: string | null
+          bio: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+          user_type: string
+        }
+        Insert: {
+          address?: string | null
+          bio?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          updated_at?: string
+          user_type: string
+        }
+        Update: {
+          address?: string | null
+          bio?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

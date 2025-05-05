@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -6,30 +5,60 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { LockKeyhole, Mail } from 'lucide-react';
+import { Mail, LockKeyhole } from 'lucide-react';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
+import { supabase } from '@/integrations/supabase/client';
+
+const loginSchema = z.object({
+  email: z.string().email({ message: 'Please enter a valid email address.' }),
+  password: z.string().min(1, { message: 'Password is required.' }),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  
-  const { logIn } = useAuth();
+  const { logIn, userType } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  const onSubmit = async (values: LoginFormValues) => {
     try {
       setLoading(true);
-      await logIn(email, password);
+      const { session } = await logIn(values.email, values.password);
       
-      toast({
-        title: "Login successful",
-        description: "Welcome back to LaborEase!",
-      });
-      
-      navigate('/');
+      if (session) {
+        toast({
+          title: "Login successful",
+          description: "Welcome back to LaborEase!",
+        });
+        
+        // Check if user has completed their profile
+        const { data } = await supabase
+          .from('profiles')
+          .select('user_type')
+          .eq('id', session.user.id)
+          .single();
+          
+        if (data?.user_type === 'laborer') {
+          navigate('/laborer-dashboard');
+        } else if (data?.user_type === 'client') {
+          navigate('/client-dashboard');
+        } else {
+          navigate('/');
+        }
+      }
     } catch (error) {
       console.error("Login error:", error);
     } finally {
@@ -38,60 +67,76 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12 animate-fade-in">
-      <Card className="w-full max-w-md shadow-lg hover-card">
+    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
+      <Card className="w-full max-w-lg shadow-lg hover-card">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Welcome back!</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Welcome Back</CardTitle>
           <CardDescription className="text-center">
-            Log in to your account to continue
+            Login to your account
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                <Input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="pl-10"
-                />
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="Email"
+                          {...field}
+                          className="pl-10"
+                        />
+                      </FormControl>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="relative">
+                      <LockKeyhole className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Password"
+                          {...field}
+                          className="pl-10"
+                        />
+                      </FormControl>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="flex justify-end">
+                <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+                  Forgot Password?
+                </Link>
               </div>
-            </div>
-            
-            <div className="space-y-2">
-              <div className="relative">
-                <LockKeyhole className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                <Input
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="pl-10"
-                />
-              </div>
-            </div>
-
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Logging in..." : "Log In"}
-            </Button>
-          </form>
+              
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Logging in..." : "Login"}
+              </Button>
+            </form>
+          </Form>
         </CardContent>
-        
-        <CardFooter className="flex flex-col space-y-4">
-          <div className="text-sm text-gray-500 text-center">
-            <Link to="/forgot-password" className="text-primary hover:underline">
-              Forgot your password?
-            </Link>
-          </div>
-          <div className="text-sm text-gray-500 text-center">
+        <CardFooter>
+          <div className="text-sm text-gray-500 text-center w-full">
             Don't have an account?{" "}
             <Link to="/register" className="text-primary hover:underline">
-              Sign up now
+              Sign up
             </Link>
           </div>
         </CardFooter>
