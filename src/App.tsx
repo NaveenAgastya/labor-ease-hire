@@ -71,14 +71,6 @@ const AppRoutes = () => {
         </ProtectedRoute>
       } />
       
-      {/* Add sub-routes for dashboard sections */}
-      {/* <Route path="/laborer-dashboard/pending" element={...} /> */}
-      {/* <Route path="/laborer-dashboard/completed" element={...} /> */}
-      {/* <Route path="/laborer-dashboard/requests" element={...} /> */}
-      {/* <Route path="/laborer-dashboard/earnings" element={...} /> */}
-      {/* <Route path="/client-dashboard/find-laborers" element={...} /> */}
-      {/* and so on... */}
-      
       {/* 404 Route */}
       <Route path="*" element={<NotFound />} />
     </Routes>
@@ -86,17 +78,17 @@ const AppRoutes = () => {
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+  <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
           <AppRoutes />
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  </BrowserRouter>
 );
 
 export default App;
