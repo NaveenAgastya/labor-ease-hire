@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -514,7 +513,7 @@ const LaborerDashboard = () => {
                       <Button 
                         onClick={() => handleMarkComplete(job.id)}
                         disabled={loadingAction === job.id}
-                        variant="success"
+                        variant="secondary"
                         className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600"
                       >
                         {loadingAction === job.id ? "Processing..." : "Mark Complete"}

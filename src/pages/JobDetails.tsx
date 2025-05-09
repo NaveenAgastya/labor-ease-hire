@@ -83,7 +83,7 @@ const JobDetails = () => {
         if (jobError) throw jobError;
         
         // Check if a laborer is assigned
-        const { data: assignmentData } = await supabase
+        const { data: assignmentData, error: assignmentError } = await supabase
           .from('job_assignments')
           .select(`
             laborer_id,
@@ -93,7 +93,12 @@ const JobDetails = () => {
             )
           `)
           .eq('job_id', id)
-          .single();
+          .maybeSingle();
+          
+        // Handle potential error from assignment query
+        if (assignmentError) {
+          console.error('Error fetching assignment data:', assignmentError);
+        }
           
         // Check if the current user has applied for this job
         if (currentUser && userType === 'laborer') {
@@ -247,7 +252,7 @@ const JobDetails = () => {
                 Posted {new Date(job.created_at).toLocaleDateString()}
               </CardDescription>
             </div>
-            <Badge variant={job.status === 'open' ? 'success' : 'secondary'}>
+            <Badge variant={job.status === 'open' ? 'secondary' : 'outline'}>
               {job.status === 'open' ? 'Open' : job.status}
             </Badge>
           </div>

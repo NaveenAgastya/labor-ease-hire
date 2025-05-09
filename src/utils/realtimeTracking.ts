@@ -22,10 +22,10 @@ export const setupRealtimeTracking = (
     .on(
       'postgres_changes',
       {
-        event: event,
+        event: event === '*' ? undefined : event,
         schema: 'public',
         table: tableName
-      },
+      } as any,
       (payload) => {
         callback(payload);
       }
@@ -63,11 +63,11 @@ export const trackRecord = (
     .on(
       'postgres_changes',
       {
-        event: event,
+        event: event === '*' ? undefined : event,
         schema: 'public',
         table: tableName,
         filter: `${columnName}=eq.${value}`
-      },
+      } as any,
       (payload) => {
         callback(payload);
       }

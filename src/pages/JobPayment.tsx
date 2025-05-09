@@ -16,10 +16,10 @@ interface JobAssignment {
   client_id: string;
   final_amount: number;
   payment_status: string;
-  job: {
+  job?: {
     title: string;
   };
-  laborer: {
+  laborer?: {
     full_name: string;
   };
 }
@@ -57,7 +57,18 @@ const JobPayment = () => {
           
         if (error) throw error;
         
-        setAssignment(data);
+        if (data) {
+          // Ensure laborer data is in the correct format
+          const formattedData: JobAssignment = {
+            ...data,
+            job: data.job,
+            laborer: data.laborer && typeof data.laborer === 'object' ? 
+              data.laborer as { full_name: string } : 
+              { full_name: 'Unknown Laborer' }
+          };
+          
+          setAssignment(formattedData);
+        }
       } catch (error: any) {
         console.error('Error fetching job assignment:', error);
         toast({
@@ -148,10 +159,10 @@ const JobPayment = () => {
       <div className="max-w-md mx-auto">
         {showPaymentForm ? (
           <PaymentForm
-            jobId={assignment.job_id}
-            amount={assignment.final_amount || 0}
-            laborerId={assignment.laborer_id}
-            clientId={assignment.client_id}
+            jobId={assignment?.job_id || ''}
+            amount={assignment?.final_amount || 0}
+            laborerId={assignment?.laborer_id || ''}
+            clientId={assignment?.client_id || ''}
             onSuccess={() => navigate('/client-dashboard')}
             onCancel={() => setShowPaymentForm(false)}
           />
