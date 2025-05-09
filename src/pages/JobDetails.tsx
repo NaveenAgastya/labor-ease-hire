@@ -119,41 +119,46 @@ const JobDetails = () => {
 
         // Ensure we're safely handling the laborer data
         let laborerAssigned = null;
-        if (assignmentData && 
-            assignmentData.laborer && 
-            typeof assignmentData.laborer === 'object' && 
-            assignmentData.laborer !== null &&
-            'id' in assignmentData.laborer && 
-            'full_name' in assignmentData.laborer) {
-          laborerAssigned = {
-            id: assignmentData.laborer.id,
-            full_name: assignmentData.laborer.full_name
-          };
+        if (assignmentData && assignmentData.laborer) {
+          // Check if the laborer object has the required properties
+          if (typeof assignmentData.laborer === 'object' && 
+              assignmentData.laborer !== null &&
+              'id' in assignmentData.laborer && 
+              'full_name' in assignmentData.laborer) {
+            laborerAssigned = {
+              id: assignmentData.laborer.id,
+              full_name: assignmentData.laborer.full_name
+            };
+          }
         }
         
         // Make sure client data is properly formed before setting the job state
-        if (jobData && 
-            jobData.client && 
-            typeof jobData.client === 'object' && 
-            'id' in jobData.client && 
-            'full_name' in jobData.client) {
+        if (jobData) {
+          // Create a default client object structure
+          const clientData = {
+            id: 'unknown',
+            full_name: 'Unknown Client',
+            phone: undefined
+          };
+          
+          // Update with actual client data if it exists and has the required properties
+          if (jobData.client && 
+              typeof jobData.client === 'object' && 
+              jobData.client !== null &&
+              'id' in jobData.client && 
+              'full_name' in jobData.client) {
+            clientData.id = jobData.client.id;
+            clientData.full_name = jobData.client.full_name;
+            
+            if ('phone' in jobData.client) {
+              clientData.phone = jobData.client.phone;
+            }
+          }
+          
+          // Set the job state with validated data
           setJob({
             ...jobData,
-            client: {
-              id: jobData.client.id,
-              full_name: jobData.client.full_name,
-              phone: jobData.client.phone
-            },
-            laborerAssigned
-          });
-        } else {
-          // If client data is malformed, create a placeholder
-          setJob({
-            ...jobData,
-            client: {
-              id: 'unknown',
-              full_name: 'Unknown Client',
-            },
+            client: clientData,
             laborerAssigned
           });
         }
