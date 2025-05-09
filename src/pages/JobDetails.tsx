@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,7 +22,7 @@ interface JobDetail {
     id: string;
     full_name: string;
     phone?: string;
-  };
+  } | null;
   laborerAssigned?: {
     id: string;
     full_name: string;
@@ -120,11 +119,9 @@ const JobDetails = () => {
         // Ensure we're safely handling the laborer data
         let laborerAssigned = null;
         if (assignmentData && assignmentData.laborer) {
-          // Using non-null assertion after checking for null
           const laborer = assignmentData.laborer;
-          if (laborer) {
-            // Double-check type and required properties
-            if (typeof laborer === 'object' && 'id' in laborer && 'full_name' in laborer) {
+          if (laborer && typeof laborer === 'object') {
+            if ('id' in laborer && 'full_name' in laborer) {
               laborerAssigned = {
                 id: String(laborer.id),
                 full_name: String(laborer.full_name)
@@ -136,26 +133,18 @@ const JobDetails = () => {
         // Make sure client data is properly formed before setting the job state
         if (jobData) {
           // Create a default client object structure
-          const clientData = {
-            id: 'unknown',
-            full_name: 'Unknown Client',
-            phone: undefined as string | undefined
-          };
+          let clientData = null;
           
           // Update with actual client data if it exists
           if (jobData.client && typeof jobData.client === 'object') {
             const client = jobData.client;
             
-            // Safe access to client properties with fallbacks
-            if (client && typeof client === 'object') {
-              clientData.id = (client && 'id' in client && client.id) ? String(client.id) : 'unknown';
-              clientData.full_name = (client && 'full_name' in client && client.full_name) 
-                ? String(client.full_name) 
-                : 'Unknown Client';
-              
-              if (client && 'phone' in client && client.phone) {
-                clientData.phone = String(client.phone);
-              }
+            if (client && typeof client === 'object' && 'id' in client && 'full_name' in client) {
+              clientData = {
+                id: String(client.id),
+                full_name: String(client.full_name),
+                phone: client.phone ? String(client.phone) : undefined
+              };
             }
           }
           
@@ -330,7 +319,7 @@ const JobDetails = () => {
               <User className="h-5 w-5 text-gray-500 mr-2" />
               <div>
                 <div className="text-sm text-gray-500">Client</div>
-                <div className="font-medium">{job?.client.full_name}</div>
+                <div className="font-medium">{job?.client?.full_name || 'Unknown'}</div>
               </div>
             </div>
             
@@ -420,7 +409,7 @@ const JobDetails = () => {
             Go Back
           </Button>
           
-          {userType === 'client' && job?.client.id === currentUser?.id && (
+          {userType === 'client' && job?.client?.id === currentUser?.id && (
             <Button variant="destructive" onClick={() => {/* Handle close job */}}>
               Close Job
             </Button>
