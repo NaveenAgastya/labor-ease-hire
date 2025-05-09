@@ -120,14 +120,15 @@ const JobDetails = () => {
         // Ensure we're safely handling the laborer data
         let laborerAssigned = null;
         if (assignmentData && assignmentData.laborer) {
-          // Check if the laborer object has the required properties
-          if (typeof assignmentData.laborer === 'object' && 
-              assignmentData.laborer !== null &&
-              'id' in assignmentData.laborer && 
-              'full_name' in assignmentData.laborer) {
+          const laborer = assignmentData.laborer;
+          // Null check and type check for laborer
+          if (laborer && 
+              typeof laborer === 'object' &&
+              'id' in laborer && 
+              'full_name' in laborer) {
             laborerAssigned = {
-              id: assignmentData.laborer.id,
-              full_name: assignmentData.laborer.full_name
+              id: laborer.id,
+              full_name: laborer.full_name
             };
           }
         }
@@ -138,20 +139,21 @@ const JobDetails = () => {
           const clientData = {
             id: 'unknown',
             full_name: 'Unknown Client',
-            phone: undefined
+            phone: undefined as string | undefined
           };
           
           // Update with actual client data if it exists and has the required properties
           if (jobData.client && 
-              typeof jobData.client === 'object' && 
-              jobData.client !== null &&
-              'id' in jobData.client && 
-              'full_name' in jobData.client) {
-            clientData.id = jobData.client.id;
-            clientData.full_name = jobData.client.full_name;
+              typeof jobData.client === 'object' &&
+              jobData.client !== null) {
             
-            if ('phone' in jobData.client) {
-              clientData.phone = jobData.client.phone;
+            // Use optional chaining and nullish coalescing for safer property access
+            const client = jobData.client;
+            clientData.id = 'id' in client ? client.id : 'unknown';
+            clientData.full_name = 'full_name' in client ? client.full_name : 'Unknown Client';
+            
+            if ('phone' in client && client.phone) {
+              clientData.phone = client.phone;
             }
           }
           
