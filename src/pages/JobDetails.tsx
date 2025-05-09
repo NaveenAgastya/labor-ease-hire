@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -118,8 +119,10 @@ const JobDetails = () => {
 
         // Ensure we're safely handling the laborer data
         let laborerAssigned = null;
-        if (assignmentData && assignmentData.laborer && 
+        if (assignmentData && 
+            assignmentData.laborer && 
             typeof assignmentData.laborer === 'object' && 
+            assignmentData.laborer !== null &&
             'id' in assignmentData.laborer && 
             'full_name' in assignmentData.laborer) {
           laborerAssigned = {
@@ -128,10 +131,32 @@ const JobDetails = () => {
           };
         }
         
-        setJob({
-          ...jobData,
-          laborerAssigned
-        });
+        // Make sure client data is properly formed before setting the job state
+        if (jobData && 
+            jobData.client && 
+            typeof jobData.client === 'object' && 
+            'id' in jobData.client && 
+            'full_name' in jobData.client) {
+          setJob({
+            ...jobData,
+            client: {
+              id: jobData.client.id,
+              full_name: jobData.client.full_name,
+              phone: jobData.client.phone
+            },
+            laborerAssigned
+          });
+        } else {
+          // If client data is malformed, create a placeholder
+          setJob({
+            ...jobData,
+            client: {
+              id: 'unknown',
+              full_name: 'Unknown Client',
+            },
+            laborerAssigned
+          });
+        }
         
       } catch (error: any) {
         console.error('Error fetching job details:', error);
@@ -258,13 +283,13 @@ const JobDetails = () => {
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>
-              <CardTitle className="text-2xl">{job.title}</CardTitle>
+              <CardTitle className="text-2xl">{job?.title}</CardTitle>
               <CardDescription>
-                Posted {new Date(job.created_at).toLocaleDateString()}
+                Posted {job ? new Date(job.created_at).toLocaleDateString() : ''}
               </CardDescription>
             </div>
-            <Badge variant={job.status === 'open' ? 'secondary' : 'outline'}>
-              {job.status === 'open' ? 'Open' : job.status}
+            <Badge variant={job?.status === 'open' ? 'secondary' : 'outline'}>
+              {job?.status === 'open' ? 'Open' : job?.status}
             </Badge>
           </div>
         </CardHeader>
@@ -272,7 +297,7 @@ const JobDetails = () => {
         <CardContent className="space-y-6">
           <div>
             <h3 className="font-medium mb-2">Description</h3>
-            <p className="text-gray-600">{job.description}</p>
+            <p className="text-gray-600">{job?.description}</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -280,7 +305,7 @@ const JobDetails = () => {
               <DollarSign className="h-5 w-5 text-gray-500 mr-2" />
               <div>
                 <div className="text-sm text-gray-500">Budget</div>
-                <div className="font-medium">${job.budget} per hour</div>
+                <div className="font-medium">${job?.budget} per hour</div>
               </div>
             </div>
             
@@ -288,7 +313,7 @@ const JobDetails = () => {
               <MapPin className="h-5 w-5 text-gray-500 mr-2" />
               <div>
                 <div className="text-sm text-gray-500">Location</div>
-                <div className="font-medium">{job.location}</div>
+                <div className="font-medium">{job?.location}</div>
               </div>
             </div>
             
@@ -296,7 +321,7 @@ const JobDetails = () => {
               <User className="h-5 w-5 text-gray-500 mr-2" />
               <div>
                 <div className="text-sm text-gray-500">Client</div>
-                <div className="font-medium">{job.client.full_name}</div>
+                <div className="font-medium">{job?.client.full_name}</div>
               </div>
             </div>
             
@@ -305,13 +330,13 @@ const JobDetails = () => {
               <div>
                 <div className="text-sm text-gray-500">Status</div>
                 <div className="font-medium capitalize">
-                  {job.laborerAssigned ? 'Assigned' : job.status}
+                  {job?.laborerAssigned ? 'Assigned' : job?.status}
                 </div>
               </div>
             </div>
           </div>
           
-          {job.skills && job.skills.length > 0 && (
+          {job?.skills && job.skills.length > 0 && (
             <div>
               <h3 className="font-medium mb-2">Required Skills</h3>
               <div className="flex flex-wrap gap-2">
@@ -322,7 +347,7 @@ const JobDetails = () => {
             </div>
           )}
           
-          {job.laborerAssigned && (
+          {job?.laborerAssigned && (
             <div>
               <h3 className="font-medium mb-2">Assigned To</h3>
               <div className="flex items-center p-3 bg-gray-50 rounded-md">
@@ -337,7 +362,7 @@ const JobDetails = () => {
             </div>
           )}
           
-          {userType === 'laborer' && job.status === 'open' && !job.laborerAssigned && (
+          {userType === 'laborer' && job?.status === 'open' && !job.laborerAssigned && (
             <div className="border-t pt-4 mt-4">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-medium">Apply for this job</h3>
@@ -386,7 +411,7 @@ const JobDetails = () => {
             Go Back
           </Button>
           
-          {userType === 'client' && job.client.id === currentUser?.id && (
+          {userType === 'client' && job?.client.id === currentUser?.id && (
             <Button variant="destructive" onClick={() => {/* Handle close job */}}>
               Close Job
             </Button>
