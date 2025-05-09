@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,7 +26,7 @@ interface JobDetail {
   laborerAssigned?: {
     id: string;
     full_name: string;
-  };
+  } | null;
   skills?: string[];
 }
 
@@ -116,10 +115,22 @@ const JobDetails = () => {
             setProposedRate(jobData.budget);
           }
         }
+
+        // Ensure we're safely handling the laborer data
+        let laborerAssigned = null;
+        if (assignmentData && assignmentData.laborer && 
+            typeof assignmentData.laborer === 'object' && 
+            'id' in assignmentData.laborer && 
+            'full_name' in assignmentData.laborer) {
+          laborerAssigned = {
+            id: assignmentData.laborer.id,
+            full_name: assignmentData.laborer.full_name
+          };
+        }
         
         setJob({
           ...jobData,
-          laborerAssigned: assignmentData?.laborer || undefined
+          laborerAssigned
         });
         
       } catch (error: any) {
