@@ -120,16 +120,16 @@ const JobDetails = () => {
         // Ensure we're safely handling the laborer data
         let laborerAssigned = null;
         if (assignmentData && assignmentData.laborer) {
+          // Using non-null assertion after checking for null
           const laborer = assignmentData.laborer;
-          // Null check and type check for laborer
-          if (laborer && 
-              typeof laborer === 'object' &&
-              'id' in laborer && 
-              'full_name' in laborer) {
-            laborerAssigned = {
-              id: laborer.id,
-              full_name: laborer.full_name
-            };
+          if (laborer) {
+            // Double-check type and required properties
+            if (typeof laborer === 'object' && 'id' in laborer && 'full_name' in laborer) {
+              laborerAssigned = {
+                id: String(laborer.id),
+                full_name: String(laborer.full_name)
+              };
+            }
           }
         }
         
@@ -142,18 +142,20 @@ const JobDetails = () => {
             phone: undefined as string | undefined
           };
           
-          // Update with actual client data if it exists and has the required properties
-          if (jobData.client && 
-              typeof jobData.client === 'object' &&
-              jobData.client !== null) {
-            
-            // Use optional chaining and nullish coalescing for safer property access
+          // Update with actual client data if it exists
+          if (jobData.client && typeof jobData.client === 'object') {
             const client = jobData.client;
-            clientData.id = 'id' in client ? client.id : 'unknown';
-            clientData.full_name = 'full_name' in client ? client.full_name : 'Unknown Client';
             
-            if ('phone' in client && client.phone) {
-              clientData.phone = client.phone;
+            // Safe access to client properties with fallbacks
+            if (client && typeof client === 'object') {
+              clientData.id = (client && 'id' in client && client.id) ? String(client.id) : 'unknown';
+              clientData.full_name = (client && 'full_name' in client && client.full_name) 
+                ? String(client.full_name) 
+                : 'Unknown Client';
+              
+              if (client && 'phone' in client && client.phone) {
+                clientData.phone = String(client.phone);
+              }
             }
           }
           
