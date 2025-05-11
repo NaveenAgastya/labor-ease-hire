@@ -1,0 +1,125 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - LaborEase</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <h1>LaborEase</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="#">Profile</a></li>
+                    <li><a href="index.html">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="payment">
+            <div class="container">
+                <div class="payment-card">
+                    <h1>Payment</h1>
+                    
+                    <div class="booking-summary">
+                        <h3>Booking Summary</h3>
+                        <div class="summary-item">
+                            <span>Worker:</span>
+                            <span>John Smith</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Service:</span>
+                            <span>Plumbing</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Date & Time:</span>
+                            <span>May 12, 2025 at 10:00 AM</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Hours worked:</span>
+                            <span>3 hours</span>
+                        </div>
+                        <div class="summary-item total">
+                            <span>Total Amount:</span>
+                            <span>$75.00</span>
+                        </div>
+                    </div>
+                    
+                    <div class="payment-methods">
+                        <h3>Choose Payment Method</h3>
+                        <div class="payment-method-options">
+                            <div class="payment-method" data-method="cash">
+                                <div class="payment-icon">💵</div>
+                                <span>Cash</span>
+                            </div>
+                            <div class="payment-method" data-method="card">
+                                <div class="payment-icon">💳</div>
+                                <span>Card</span>
+                            </div>
+                            <div class="payment-method" data-method="upi">
+                                <div class="payment-icon">📱</div>
+                                <span>UPI</span>
+                            </div>
+                        </div>
+                        <input type="hidden" id="selectedPayment" name="selectedPayment">
+                    </div>
+                    
+                    <div id="cardPaymentForm" class="payment-details" style="display: none;">
+                        <div class="form-group">
+                            <label for="cardNumber">Card Number</label>
+                            <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label for="expiryDate">Expiry Date</label>
+                                <input type="text" id="expiryDate" placeholder="MM/YY">
+                            </div>
+                            <div class="form-group half">
+                                <label for="cvv">CVV</label>
+                                <input type="text" id="cvv" placeholder="123">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="upiPaymentForm" class="payment-details" style="display: none;">
+                        <div class="form-group">
+                            <label for="upiId">UPI ID</label>
+                            <input type="text" id="upiId" placeholder="yourid@bankname">
+                        </div>
+                    </div>
+                    
+                    <button id="payButton" class="btn primary full-width" disabled>Complete Payment</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 LaborEase. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <div id="successModal" class="modal">
+        <div class="modal-content success-modal">
+            <div class="success-icon">✓</div>
+            <h2>Payment Successful!</h2>
+            <p>Thank you for using LaborEase.</p>
+            <button class="btn primary full-width" onclick="location.href='dashboard.html';">Go to Dashboard</button>
+        </div>
+    </div>
+    
+    <div id="toast" class="toast hidden">
+        <div class="toast-message"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

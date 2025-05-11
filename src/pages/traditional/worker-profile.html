@@ -1,0 +1,160 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker Profile - LaborEase</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <h1>LaborEase</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="#">Profile</a></li>
+                    <li><a href="index.html">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="worker-profile">
+            <div class="container">
+                <div class="profile-header">
+                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="John Smith" class="profile-avatar">
+                    <div class="profile-info">
+                        <h1>John Smith</h1>
+                        <div class="profile-specialty">Professional Plumber</div>
+                        <div class="worker-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-text">5.0</span>
+                            <span class="rating-count">(24 jobs)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile-details">
+                    <div class="detail-card">
+                        <h3>Personal Information</h3>
+                        <div class="detail-item">
+                            <span class="detail-label">Age:</span>
+                            <span class="detail-value">34 years</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Experience:</span>
+                            <span class="detail-value">8 years</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Location:</span>
+                            <span class="detail-value">Downtown, City</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Languages:</span>
+                            <span class="detail-value">English, Spanish</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <h3>Expertise</h3>
+                        <ul class="expertise-list">
+                            <li>Pipe Installation & Repair</li>
+                            <li>Fixture Installation</li>
+                            <li>Drain Cleaning</li>
+                            <li>Water Heater Services</li>
+                            <li>Leak Detection & Repair</li>
+                            <li>Emergency Plumbing</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <h3>Pricing</h3>
+                        <div class="price-item">
+                            <span class="price-label">Hourly Rate:</span>
+                            <span class="price-value">$25/hour</span>
+                        </div>
+                        <div class="price-item">
+                            <span class="price-label">Minimum Hours:</span>
+                            <span class="price-value">2 hours</span>
+                        </div>
+                        <div class="price-item">
+                            <span class="price-label">Emergency Services:</span>
+                            <span class="price-value">$40/hour</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <h3>Reviews (24)</h3>
+                        <div class="review">
+                            <div class="review-header">
+                                <div class="review-name">Michael B.</div>
+                                <div class="review-rating">★★★★★</div>
+                            </div>
+                            <div class="review-date">April 28, 2025</div>
+                            <div class="review-text">John was extremely professional and fixed our leaking sink quickly. Highly recommended!</div>
+                        </div>
+                        
+                        <div class="review">
+                            <div class="review-header">
+                                <div class="review-name">Sandra L.</div>
+                                <div class="review-rating">★★★★★</div>
+                            </div>
+                            <div class="review-date">April 15, 2025</div>
+                            <div class="review-text">Very thorough and knowledgeable. Replaced our water heater for a reasonable price.</div>
+                        </div>
+                        
+                        <a href="#" class="view-all">View all reviews</a>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button id="hireButton" class="btn primary">Hire John</button>
+                    <button id="cancelButton" class="btn outline">Cancel</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 LaborEase. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Confirm Cancellation</h2>
+            <p>Do you really want to cancel the booking process?</p>
+            <div class="modal-buttons">
+                <button class="btn outline" id="goBackBtn">Go Back</button>
+                <button class="btn primary" id="confirmCancelBtn">Yes, Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="otpModal" class="modal">
+        <div class="modal-content">
+            <h2>Worker Verification</h2>
+            <p>Your worker has arrived! Please enter the verification OTP provided by the worker:</p>
+            <div class="otp-inputs modal-otp">
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" required>
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" required>
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" required>
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" required>
+            </div>
+            <button class="btn primary full-width" id="verifyOtpBtn">Verify Worker</button>
+        </div>
+    </div>
+
+    <div id="toast" class="toast hidden">
+        <div class="toast-message"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

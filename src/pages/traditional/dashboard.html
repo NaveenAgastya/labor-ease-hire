@@ -1,0 +1,143 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - LaborEase</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <h1>LaborEase</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="dashboard.html" class="active">Dashboard</a></li>
+                    <li><a href="#">Profile</a></li>
+                    <li><a href="index.html">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="dashboard">
+            <div class="container">
+                <div class="dashboard-header">
+                    <h1>Welcome, John!</h1>
+                    <button class="btn primary" onclick="location.href='work-selection.html';">Book a Worker</button>
+                </div>
+                
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <div class="stat-value">3</div>
+                        <div class="stat-label">Total Bookings</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">1</div>
+                        <div class="stat-label">Active Bookings</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">$210</div>
+                        <div class="stat-label">Total Spent</div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-section">
+                    <h2>Active Bookings</h2>
+                    <div class="booking-card">
+                        <div class="booking-info">
+                            <div class="booking-service">Plumbing</div>
+                            <h3>Sink Repair</h3>
+                            <div class="booking-details">
+                                <div class="booking-detail">
+                                    <span class="detail-icon">📅</span>
+                                    <span>May 12, 2025 at 10:00 AM</span>
+                                </div>
+                                <div class="booking-detail">
+                                    <span class="detail-icon">👤</span>
+                                    <span>Robert Chen</span>
+                                </div>
+                                <div class="booking-detail">
+                                    <span class="detail-icon">📍</span>
+                                    <span>123 Main St, Apartment 4B</span>
+                                </div>
+                                <div class="booking-status pending">In Progress</div>
+                            </div>
+                        </div>
+                        <div class="booking-actions">
+                            <button class="btn outline sm">View Details</button>
+                            <button class="btn primary sm">Complete & Pay</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-section">
+                    <h2>Past Bookings</h2>
+                    <div class="booking-card">
+                        <div class="booking-info">
+                            <div class="booking-service">Electrical</div>
+                            <h3>Outlet Installation</h3>
+                            <div class="booking-details">
+                                <div class="booking-detail">
+                                    <span class="detail-icon">📅</span>
+                                    <span>April 28, 2025 at 2:00 PM</span>
+                                </div>
+                                <div class="booking-detail">
+                                    <span class="detail-icon">👤</span>
+                                    <span>Maria Garcia</span>
+                                </div>
+                                <div class="booking-detail">
+                                    <span class="detail-icon">📍</span>
+                                    <span>123 Main St, Apartment 4B</span>
+                                </div>
+                                <div class="booking-status completed">Completed</div>
+                            </div>
+                        </div>
+                        <div class="booking-actions">
+                            <button class="btn outline sm">View Details</button>
+                            <button class="btn secondary sm">Leave Review</button>
+                        </div>
+                    </div>
+                    
+                    <div class="booking-card">
+                        <div class="booking-info">
+                            <div class="booking-service">Painting</div>
+                            <h3>Living Room Walls</h3>
+                            <div class="booking-details">
+                                <div class="booking-detail">
+                                    <span class="detail-icon">📅</span>
+                                    <span>April 15, 2025 at 9:00 AM</span>
+                                </div>
+                                <div class="booking-detail">
+                                    <span class="detail-icon">👤</span>
+                                    <span>David Johnson</span>
+                                </div>
+                                <div class="booking-detail">
+                                    <span class="detail-icon">📍</span>
+                                    <span>123 Main St, Apartment 4B</span>
+                                </div>
+                                <div class="booking-status completed">Completed</div>
+                            </div>
+                        </div>
+                        <div class="booking-actions">
+                            <button class="btn outline sm">View Details</button>
+                            <button class="btn secondary sm">Leave Review</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 LaborEase. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

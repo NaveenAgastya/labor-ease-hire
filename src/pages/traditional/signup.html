@@ -1,0 +1,79 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - LaborEase</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <h1>LaborEase</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="form-section">
+            <div class="container">
+                <div class="form-card">
+                    <h1>Sign Up</h1>
+                    <p>Create an account to continue</p>
+                    
+                    <form id="signupForm">
+                        <div class="form-group">
+                            <label for="fullName">Full Name</label>
+                            <input type="text" id="fullName" name="fullName" placeholder="Enter your full name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <div class="phone-input-container">
+                                <input type="tel" id="phone" name="phone" placeholder="Enter your phone number" required>
+                                <button type="button" id="sendOtpBtn" class="btn secondary">Send OTP</button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group otp-container" id="otpContainer" style="display: none;">
+                            <label for="otp">Enter OTP</label>
+                            <div class="otp-inputs">
+                                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" required>
+                                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" required>
+                                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" required>
+                                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" required>
+                                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" required>
+                                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" required>
+                                <input type="hidden" id="otp" name="otp">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn primary full-width" id="signupBtn" disabled>Sign Up</button>
+                    </form>
+                    
+                    <p class="form-footer">Already have an account? <a href="#">Log in</a></p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 LaborEase. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <div id="toast" class="toast hidden">
+        <div class="toast-message"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

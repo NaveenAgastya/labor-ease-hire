@@ -17,6 +17,8 @@ import LaborerDashboard from "./pages/dashboard/LaborerDashboard";
 import ClientDashboard from "./pages/dashboard/ClientDashboard";
 import JobDetails from "./pages/JobDetails";
 import JobPayment from "./pages/JobPayment";
+import UserLaborSelection from "./pages/UserLaborSelection";
+import UserSignup from "./pages/UserSignup";
 
 const queryClient = new QueryClient();
 
@@ -45,9 +47,10 @@ const ProtectedRoute = ({ children, requiredUserType }: ProtectedRouteProps) => 
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<Index />} />
+      <Route path="/" element={<UserLaborSelection />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/signup" element={<UserSignup />} />
       
       <Route path="/laborer-profile-setup" element={
         <ProtectedRoute requiredUserType="laborer">

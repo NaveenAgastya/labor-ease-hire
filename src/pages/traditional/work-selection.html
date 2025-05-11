@@ -1,0 +1,112 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Work - LaborEase</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <h1>LaborEase</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="#">Dashboard</a></li>
+                    <li><a href="#">Profile</a></li>
+                    <li><a href="index.html">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="work-selection">
+            <div class="container">
+                <h1>Select Type of Work</h1>
+                
+                <form id="workSelectionForm">
+                    <div class="form-group">
+                        <label for="location">Your Location</label>
+                        <div class="location-input">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            <input type="text" id="location" name="location" placeholder="Enter your location" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Select Service Type</label>
+                        <div class="service-cards">
+                            <div class="service-card" data-service="plumbing">
+                                <div class="service-icon">🔧</div>
+                                <h3>Plumbing</h3>
+                            </div>
+                            <div class="service-card" data-service="electrical">
+                                <div class="service-icon">⚡</div>
+                                <h3>Electrical</h3>
+                            </div>
+                            <div class="service-card" data-service="carpentry">
+                                <div class="service-icon">🪚</div>
+                                <h3>Carpentry</h3>
+                            </div>
+                            <div class="service-card" data-service="painting">
+                                <div class="service-icon">🖌️</div>
+                                <h3>Painting</h3>
+                            </div>
+                            <div class="service-card" data-service="cleaning">
+                                <div class="service-icon">🧹</div>
+                                <h3>Cleaning</h3>
+                            </div>
+                            <div class="service-card" data-service="construction">
+                                <div class="service-icon">👷</div>
+                                <h3>Construction</h3>
+                            </div>
+                        </div>
+                        <input type="hidden" id="selectedService" name="selectedService" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="appointmentDate">Appointment Date & Time</label>
+                            <input type="text" id="appointmentDate" name="appointmentDate" placeholder="Select date and time" required>
+                        </div>
+                        
+                        <div class="form-group half">
+                            <label for="workersNeeded">Number of Workers</label>
+                            <select id="workersNeeded" name="workersNeeded" required>
+                                <option value="" disabled selected>Select number</option>
+                                <option value="1">1 Worker</option>
+                                <option value="2">2 Workers</option>
+                                <option value="3">3 Workers</option>
+                                <option value="4">4 Workers</option>
+                                <option value="5">5+ Workers</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn primary full-width">Find Available Workers</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 LaborEase. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <div id="toast" class="toast hidden">
+        <div class="toast-message"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="script.js"></script>
+</body>
+</html>
