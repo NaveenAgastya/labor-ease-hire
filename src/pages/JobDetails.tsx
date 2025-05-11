@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -121,6 +122,7 @@ const JobDetails = () => {
         if (assignmentData && assignmentData.laborer) {
           const laborer = assignmentData.laborer;
           if (laborer && typeof laborer === 'object') {
+            // Type guard to ensure the laborer object has the correct properties
             if ('id' in laborer && 'full_name' in laborer) {
               laborerAssigned = {
                 id: String(laborer.id),
@@ -139,6 +141,7 @@ const JobDetails = () => {
           if (jobData.client && typeof jobData.client === 'object') {
             const client = jobData.client;
             
+            // Type guard to ensure the client object has the correct properties
             if (client && typeof client === 'object' && 'id' in client && 'full_name' in client) {
               clientData = {
                 id: String(client.id),
